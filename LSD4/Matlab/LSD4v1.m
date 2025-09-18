@@ -1,0 +1,42 @@
+%% LSD 4 4DM90 Structural dynamics
+clear; clc; close all;
+
+%% System definition
+m1 = 2; m2 = 2; m3 = 1; m4 = 1;
+k1 = 100; k2 = 50; k3 = 50; k4 = 10;
+b1 = 0.8; b2 = 0.8; b3 = 0.4; b4 = 0.4;
+
+% system matrices
+M1 = [m2 0;
+     0  m1];
+
+B1 = [b2     -b2;
+     -b2    b1+b2];
+
+K1 = [k2     -k2;
+     -k2    k1+k2];
+
+% Frequency range
+f = 0.1:0.01:1.6;
+w = f * (2*pi);
+
+%% FRF calculation
+n = length(w);
+H1 = zeros(2,2,n);
+
+for i = 1:n
+    A = -w(i)^2*M1 + 1i*w(i)*B1 + K1;
+    H1(:,:,i) = inv(A);
+end
+
+%% Plot all FRFs
+figure;
+index = [1 1; 1 2; 2 1; 2 2];
+for i = 1:4
+    subplot(2,2,i);
+    loglog(f,mag2db(abs(squeeze(H1(index(i,1),index(i,2),:)))));
+    xlabel('Frequency [Hz]');
+    ylabel('|H_{' + string(index(i,1)) + string(index(i,2)) + '}| [dB]');
+    grid on;
+end
+sgtitle('FRFs of subsystem 1');
