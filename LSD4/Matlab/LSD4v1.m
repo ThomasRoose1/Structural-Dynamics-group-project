@@ -74,3 +74,35 @@ end
 sgtitle('FRFs of subsystem 2');
 hold off;
 
+%% Complete system matrices
+M = diag([m1,m2,m3,m4]);
+B = [b1+b2      -b2     0       0;
+      -b2       b2+b3   -b3     0;
+      0         -b3     b3+b4   -b4;
+      0         0       -b4     b4;]
+
+K = [k1+k2      -k2     0       0;
+     -k2        k2+k3   -k3     0;
+     0          -k3     k3+k4   -k4;
+     0          0       -k4     k4];
+
+%% FRF calculation for complete system
+H = zeros(4,4,n);
+
+for i = 1:n
+    A = -w(i)^2*M + 1i*w(i)*B + K;
+    H(:,:,i) = A\eye(4,4);
+end
+
+%% Plot all FRFs of complete system
+figure; hold on;
+index = [1 1; 1 2; 1 3; 1 4; 2 1; 2 2; 2 3; 2 4; 3 1; 3 2; 3 3; 3 4; 4 1; 4 2; 4 3; 4 4];
+for i = 1:16
+    subplot(4,4,i);
+    loglog(f,squeeze(abs(H(index(i,1),index(i,2),:))));
+    xlabel('Frequency [Hz]');
+    ylabel('|H_{' + string(index(i,1)) + string(index(i,2)) + '}|');
+    grid on;
+end
+sgtitle('FRFs of complete system');
+hold off;
