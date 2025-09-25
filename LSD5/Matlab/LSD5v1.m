@@ -11,7 +11,7 @@ signals(1,:) = sin((2*pi) * 1 * t);
 
 % A signal being the sum of two harmonic functions with f1 = 1 Hz and f2 =
 % 2 Hz and 90° phase shift
-signals(2,:) = signals(1,:) + cos(((2*pi) * 2 * t) + deg2rad(90)); 
+signals(2,:) = signals(1,:) + sin(((2*pi) * 2 * t) + deg2rad(90)); 
 
 % A square wave signal, where each square has a length of 1 sec.
 count = 0;
