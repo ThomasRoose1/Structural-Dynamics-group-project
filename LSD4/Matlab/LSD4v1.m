@@ -1,4 +1,4 @@
-%% LSD 4 4DM90 Structural dynamics
+%% 4DM90 Structural dynamics LSD 4: Impedence coupling
 clear; clc; close all;
 
 %% Parameters
@@ -7,7 +7,7 @@ k1 = 100; k2 = 50; k3 = 50; k4 = 10;
 b1 = 0.8; b2 = 0.8; b3 = 0.4; b4 = 0.4;
 
 % Frequency range
-f = 0.1:0.01:1.6;
+f = 0.1:0.001:1.6;
 w = f * (2*pi);
 
 %% subsystem 1 matrices
@@ -119,7 +119,7 @@ H2_IB = H2(2:3,1,:);
 H2_II = H2(2:3,2:3,:); 
 
 for k = 1:n
-    % Scalars/matrices at frequency k
+    % Save the valeu of each fRF at frequency k
     H1BB = H1_BB(1,1,k);
     H1BI = H1_BI(1,1,k);
     H1IB = H1_IB(1,1,k);
@@ -147,10 +147,36 @@ for k = 1:n
     H_ic(:,:,k) = first_term - second_term;
 end
 
-figure; loglog(f,squeeze(abs(H_ic(1,1,:))));
-xlabel('Frequency [Hz]');
-ylabel('|H_k|');
-title('FRF H_{22} using impedence coupling');
-grid on;
+%% Plot the FRF of the impendence coupling system
+figure; hold on;
+index1 = [1 1; 1 2; 2 1; 2 2];
+FRFname = ["BB" "BI" "IB" "II"];
+for i = 1:4
+    subplot(2,2,i);
+    loglog(f,squeeze(abs(H_ic(index1(i,1),index1(i,2),:))));
+    xlabel('Frequency [Hz]');
+    ylabel('|H_{' + FRFname(i) + '}|');
+    grid on;
+end
+sgtitle('FRFs of Impedence coupled system');
+hold off;
 
+%% Add noise to the subsystem
+% Define Gaussian noise with standard deviation of 0.001
+noise = 0.001 * randn(size(H));
 
+% Add the noise to each the complete system
+H_noise = H + noise; 
+
+%% Plot all FRFs of subsystem 1 with noise
+figure; hold on;
+index1 = [1 1; 1 2; 2 1; 2 2];
+for i = 1:4
+    subplot(2,2,i);
+    loglog(f,squeeze(abs(H_noise(index1(i,1),index1(i,2),:))));
+    xlabel('Frequency [Hz]');
+    ylabel('|H_{' + string(index1(i,1)) + string(index1(i,2)) + '}|');
+    grid on;
+end
+sgtitle('FRFs of subsystem 1');
+hold off;
