@@ -30,17 +30,8 @@ for i = 1:n
 end
 
 %% Plot all FRFs of subsystem 1
-figure; hold on;
-index1 = [1 1; 1 2; 2 1; 2 2];
-for i = 1:4
-    subplot(2,2,i);
-    loglog(f,squeeze(abs(H1(index1(i,1),index1(i,2),:))));
-    xlabel('Frequency [Hz]');
-    ylabel('|H_{' + string(index1(i,1)) + string(index1(i,2)) + '}|');
-    grid on;
-end
-sgtitle('FRFs of subsystem 1');
-hold off;
+index2 = [1 1; 1 2; 2 1; 2 2];
+plotFullFRF(f,H1,index2,"FRF of subsystem 1");
 
 %% Subsystem 2 matrices
 M2 = [0 0 0;
@@ -62,17 +53,8 @@ for i = 1:n
 end
 
 %% Plot all FRFs of subsystem 2
-figure; hold on;
-index2 = [1 1; 1 2; 1 3; 2 1; 2 2; 2 3; 3 1; 3 2; 3 3];
-for i = 1:9
-    subplot(3,3,i);
-    loglog(f,squeeze(abs(H2(index2(i,1),index2(i,2),:))));
-    xlabel('Frequency [Hz]');
-    ylabel('|H_{' + string(index2(i,1)) + string(index2(i,2)) + '}|');
-    grid on;
-end
-sgtitle('FRFs of subsystem 2');
-hold off;
+index3 = [1 1; 1 2; 1 3; 2 1; 2 2; 2 3; 3 1; 3 2; 3 3];
+plotFullFRF(f,H2,index3,"FRF of subsystem 2");
 
 %% Complete system matrices
 M = diag([m1,m2,m3,m4]);
@@ -95,104 +77,159 @@ for i = 1:n
 end
 
 %% Plot all FRFs of complete system
-figure; hold on;
 index4 = [1 1; 1 2; 1 3; 1 4; 2 1; 2 2; 2 3; 2 4; 3 1; 3 2; 3 3; 3 4; 4 1; 4 2; 4 3; 4 4];
-for i = 1:16
-    subplot(4,4,i);
-    loglog(f,squeeze(abs(H(index4(i,1),index4(i,2),:))));
-    xlabel('Frequency [Hz]');
-    ylabel('|H_{' + string(index4(i,1)) + string(index4(i,2)) + '}|');
-    grid on;
-end
-sgtitle('FRFs of complete system');
-hold off;
+plotFullFRF(f,H,index4,"FRF of complete system");
 
 %% Determine the complete FRF using impedence coupling
+% Reorganise FRF matrices
 H1_BB = H1(1,1,:);
 H1_BI = H1(1,2,:);
 H1_IB = H1(2,1,:);
 H1_II = H1(2,2,:);
+
+H1_ic = [H1_BB, H1_BI;
+         H1_IB, H1_II];
 
 H2_BB = H2(1,1,:);
 H2_BI = H2(1,2:3,:);    
 H2_IB = H2(2:3,1,:);   
 H2_II = H2(2:3,2:3,:); 
 
-for k = 1:n
-    % Save the valeu of each fRF at frequency k
-    H1BB = H1_BB(1,1,k);
-    H1BI = H1_BI(1,1,k);
-    H1IB = H1_IB(1,1,k);
-    H1II = H1_II(1,1,k);
-    
-    H2BB = H2_BB(:,:,k);
-    H2BI = H2_BI(:,:,k);  
-    H2IB = H2_IB(:,:,k);   
-    H2II = H2_II(:,:,k);   
-    
-    % First big block
-   first_term = [H1BB   H1BI   zeros(1,2);
-                 H1IB   H1II   zeros(1,2);
-                 zeros(2,1)     zeros(2,1)     H2II];
-    
-    % Coupling correction (outer product)
-    v = [ H1BB;
-          H1IB;
-         -H2IB];
-    
-    second_term = v * inv(H1BB + H2BB) * transpose(v);
-    
-    % Coupled FRF at this frequency
-    H_ic(:,:,k) = first_term - second_term;
-end
+H2_ic = [H2_BB, H2_BI;
+         H2_IB, H2_II];
 
+H_ic = impedanceCoupling(H1_ic, H2_ic);
 %% Plot the FRF of the impendence coupling system
-figure; hold on;
-index4 = [1 1; 1 2; 1 3; 1 4; 2 1; 2 2; 2 3; 2 4; 3 1; 3 2; 3 3; 3 4; 4 1; 4 2; 4 3; 4 4];
-FRFname = ["BB" "BI" "IB" "II"];
-for i = 1:16
-    subplot(4,4,i);
-    loglog(f,squeeze(abs(H_ic(index4(i,1),index4(i,2),:))));
-    xlabel('Frequency [Hz]');
-    ylabel('|H|');
-    grid on;
-end
-sgtitle('FRFs of Impedence coupled system');
-hold off;
+index_ic = [1 1; 1 2; 1 3; 1 4; 2 1; 2 2; 2 3; 2 4; 3 1; 3 2; 3 3; 3 4; 4 1; 4 2; 4 3; 4 4];
+% index_ic = ["B" "B"; "B" "I"; "B" "I"; "B" "I"; "I" "B"; "I" "I"; "I" "I"; "I" "I"; "I" "B"; "I" "I"; "I" "I"; "I" "I"; "I" "B"; "I" "I"; "I" "I"; "I" "I"];
+plotFullFRF(f,H_ic,index_ic,"FRFs of impedence coupled system");
 
-%% 
-figure; hold on;
-index4 = [1 1; 1 2; 1 3; 1 4; 2 1; 2 2; 2 3; 2 4; 3 1; 3 2; 3 3; 3 4; 4 1; 4 2; 4 3; 4 4];
-FRFname = ["BB" "BI" "IB" "II"];
-for i = 1:16
-    subplot(4,4,i);
-    loglog(f,squeeze(abs(H(index4(i,1),index4(i,2),:))));
-    hold on;
-    loglog(f,squeeze(abs(H_ic(index4(i,1),index4(i,2),:))));
-    hold off;
-    xlabel('Frequency [Hz]');
-    ylabel('|H|');
-    grid on;
-end
-sgtitle('Calculated FRF and impedence coupled FRFs');
-hold off;
-
-%% Add noise to the subsystem
-% Define Gaussian noise with standard deviation of 0.001
-noise = 0.001 * randn(size(H));
-
-% Add the noise to each the complete system
-H_noise = H + noise; 
-
-% %% Plot all FRFs of subsystem 1 with noise
+% %% 
 % figure; hold on;
-% index1 = [1 1; 1 2; 2 1; 2 2];
-% for i = 1:4
-%     subplot(2,2,i);
-%     loglog(f,squeeze(abs(H_noise(index1(i,1),index1(i,2),:))));
+% index4 = [1 1; 1 2; 1 3; 1 4; 2 1; 2 2; 2 3; 2 4; 3 1; 3 2; 3 3; 3 4; 4 1; 4 2; 4 3; 4 4];
+% FRFname = ["BB" "BI" "IB" "II"];
+% for i = 1:16
+%     subplot(4,4,i);
+%     loglog(f,squeeze(abs(H(index4(i,1),index4(i,2),:))));
+%     hold on;
+%     loglog(f,squeeze(abs(H_ic(index4(i,1),index4(i,2),:))));
+%     hold off;
 %     xlabel('Frequency [Hz]');
-%     ylabel('|H_{' + string(index1(i,1)) + string(index1(i,2)) + '}|');
+%     ylabel('|H|');
 %     grid on;
 % end
-% sgtitle('FRFs of subsystem 1');
+% sgtitle('Calculated FRF and impedence coupled FRFs');
 % hold off;
+
+%% Add noise to the subsystem and complete system
+% Define Gaussian noise with standard deviation of 0.001
+sd = 0.001;
+noise1 = sd * randn(size(H1));
+noise2 = sd * randn(size(H2));
+noise_complete = sd * randn(size(H));
+
+% Add the noise to each subsystem
+H1_noise = H1 + noise1; 
+H2_noise = H2 + noise2;
+H_noise = H + noise_complete;
+
+%% Plot all FRFs of the subsystems and complete system with noise
+index2 = [1 1; 1 2; 2 1; 2 2];
+plotFullFRF(f, H1_noise, index2, "FRF of subsystem 1 with noise");
+
+index3 = [1 1; 1 2; 1 3; 2 1; 2 2; 2 3; 3 1; 3 2; 3 3];
+plotFullFRF(f,H2_noise,index3,"FRF of subsystem 2 with noise");
+
+index4 = [1 1; 1 2; 1 3; 1 4; 2 1; 2 2; 2 3; 2 4; 3 1; 3 2; 3 3; 3 4; 4 1; 4 2; 4 3; 4 4];
+plotFullFRF(f,H_noise,index4,"FRF of complete system with noise");
+
+%% Determine the complete FRF using impedence coupling based on subsystems with noise
+% Reorganise FRF matrices
+H1_BB_noise = H1_noise(1,1,:);
+H1_BI_noise = H1_noise(1,2,:);
+H1_IB_noise = H1_noise(2,1,:);
+H1_II_noise = H1_noise(2,2,:);
+
+H1_ic_noise = [H1_BB_noise, H1_BI_noise;
+               H1_IB_noise, H1_II_noise];
+
+H2_BB_noise = H2_noise(1,1,:);
+H2_BI_noise = H2_noise(1,2:3,:);    
+H2_IB_noise = H2_noise(2:3,1,:);   
+H2_II_noise = H2_noise(2:3,2:3,:); 
+
+H2_ic_noise = [H2_BB_noise, H2_BI_noise;
+               H2_IB_noise, H2_II_noise];
+
+H_ic_noise = impedanceCoupling(H1_ic_noise, H2_ic_noise);
+
+%% Plot the impendence coupled FRF with noise
+index_ic = [1 1; 1 2; 1 3; 1 4; 2 1; 2 2; 2 3; 2 4; 3 1; 3 2; 3 3; 3 4; 4 1; 4 2; 4 3; 4 4];
+plotFullFRF(f,H_ic_noise,index_ic,"FRFs of impedence coupled system with noise");
+
+
+%% Function definitions
+function plotFullFRF(f, H, index, plotTitle)
+    % plot all FRFs of the given FRF matrix in a square grid on log log
+    % scale. 
+    figure;
+    for i = 1:size(index,1)
+        subplot(size(H,1), size(H,1), i);
+        loglog(f, squeeze(abs(H(index(i,1), index(i,2), :))));
+        xlabel('Frequency [Hz]');
+        ylabel('|H_{' + string(index(i,1)) + string(index(i,2)) + '}|');
+        grid on;
+    end
+    sgtitle(plotTitle);
+end
+
+function H_ic = impedanceCoupling(H1, H2)
+%   ImpedanceCoupling of two subsystems using the 1 inverse metho
+%
+%   Inputs:
+%       H1 : (n1 x n1 x N) FRF of subsystem 1
+%       H2 : (n2 x n2 x N) FRF of subsystem 2
+%            Both must share 1 common boundary DOF (row/col 1).
+%            Internal DOFs are in rows/cols 2:end.
+%
+%   Output:
+%       H_ic : ( (n1-1 + n2-1 + 1) x (n1-1 + n2-1 + 1) x N ) coupled FRF
+%
+%   The result is the impedance-coupled FRF for all frequencies.
+
+    N = size(H1,3);      % number of frequency points
+    n1i = size(H1,1)-1;  % # of internal DOFs in H1
+    n2i = size(H2,1)-1;  % # of internal DOFs in H2
+
+    % Preallocate result
+    H_ic = zeros(1+n1i+n2i, 1+n1i+n2i, N);
+
+    for k = 1:N
+        % Partition H1
+        H1BB = H1(1,1,k);
+        H1BI = H1(1,2:end,k);
+        H1IB = H1(2:end,1,k);
+        H1II = H1(2:end,2:end,k);
+
+        % Partition H2
+        H2BB = H2(1,1,k);
+        H2BI = H2(1,2:end,k);
+        H2IB = H2(2:end,1,k);
+        H2II = H2(2:end,2:end,k);
+
+        % First block matrix
+        first_term = [ H1BB      H1BI        zeros(1,n2i);
+                       H1IB      H1II        zeros(n1i,n2i);
+                       zeros(n2i,1) zeros(n2i,n1i) H2II ];
+
+        % Coupling correction (outer product)
+        v = [ H1BB;
+              H1IB;
+             -H2IB ];
+
+        second_term = v * ( (H1BB + H2BB) \ transpose(v) );
+
+        % Store result
+        H_ic(:,:,k) = first_term - second_term;
+    end
+end
