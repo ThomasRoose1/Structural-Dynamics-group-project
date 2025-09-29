@@ -2,7 +2,13 @@
 clear; clc; close all;
 
 %% Define signals
-t = 0:0.01:5;
+delta_t = 0.01;
+T = 5;
+delta_f = 1 / T;
+N = T / delta_t;
+% N = 500;
+t = (0:N-1)*delta_t;
+fs = 1 / delta_t;
 
 signals = zeros(6,length(t));
 
@@ -49,14 +55,15 @@ for i = 1:size(signals,1)
     subplot(2,3,i);
     plot(t,signals(i,:));
     xlabel("time [s]");
-    ylabel("amplitude");
+    ylabel("amplitude [m]");
     title('Signal '+ string(i));
     ylim([1.5*min(signals(i,:)) 1.5*max(signals(i,:))]);
+    grid on;
 end
 
-%% Perfrom the fft of all signals
-fftSignals = fft(signals, [], 2);
-f = (0:length(t)-1) * (1/(t(2)-t(1))); % Frequency vector
+%% Perfrom the fft of all signals 
+fftSignals = 1/N*fft(signals, [], 2);
+f = (0:N-1) * delta_f; % Frequency vector
 
 % Plot the magnitude of the FFT results
 figure;
@@ -67,10 +74,11 @@ for i = 1:size(fftSignals, 1)
     h.MarkerSize = 6;      % smaller dot
     h.LineWidth = 0.1;       % thinner stem lines
     xlabel("Frequency [Hz]");
-    ylabel("Magnitude");
+    ylabel("Magnitude [m]");
     title('FFT of Signal ' + string(i));
     xlim([0 max(f)]);
     ylim([0 1.2*max(abs(fftSignals(i,:)))]);
+    grid on;
 end
 
 
