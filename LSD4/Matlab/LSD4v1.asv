@@ -104,60 +104,72 @@ index_ic = [1 1; 1 2; 1 3; 1 4; 2 1; 2 2; 2 3; 2 4; 3 1; 3 2; 3 3; 3 4; 4 1; 4 2
 % index_ic = ["B" "B"; "B" "I"; "B" "I"; "B" "I"; "I" "B"; "I" "I"; "I" "I"; "I" "I"; "I" "B"; "I" "I"; "I" "I"; "I" "I"; "I" "B"; "I" "I"; "I" "I"; "I" "I"];
 plotFullFRF(f,H_ic,index_ic,"FRFs of impedence coupled system");
 
-% %% 
-% figure; hold on;
-% index4 = [1 1; 1 2; 1 3; 1 4; 2 1; 2 2; 2 3; 2 4; 3 1; 3 2; 3 3; 3 4; 4 1; 4 2; 4 3; 4 4];
-% FRFname = ["BB" "BI" "IB" "II"];
-% for i = 1:16
-%     subplot(4,4,i);
-%     loglog(f,squeeze(abs(H(index4(i,1),index4(i,2),:))));
-%     hold on;
-%     loglog(f,squeeze(abs(H_ic(index4(i,1),index4(i,2),:))));
-%     hold off;
-%     xlabel('Frequency [Hz]');
-%     ylabel('|H|');
-%     grid on;
-% end
-% sgtitle('Calculated FRF and impedence coupled FRFs');
-% hold off;
-
-%% Add noise to the subsystem
+%% Add noise to the subsystem and complete system
 % Define Gaussian noise with standard deviation of 0.001
 sd = 0.001;
 noise1 = sd * randn(size(H1));
 noise2 = sd * randn(size(H2));
+noise_complete = sd * randn(size(H));
 
 % Add the noise to each subsystem
 H1_noise = H1 + noise1; 
 H2_noise = H2 + noise2;
+H_noise = H + noise_complete;
 
-%% Plot all FRFs of the subsystems with noise
+%% Plot all FRFs of the subsystems and complete system with noise
 index2 = [1 1; 1 2; 2 1; 2 2];
 plotFullFRF(f, H1_noise, index2, "FRF of subsystem 1 with noise");
 
 index3 = [1 1; 1 2; 1 3; 2 1; 2 2; 2 3; 3 1; 3 2; 3 3];
 plotFullFRF(f,H2_noise,index3,"FRF of subsystem 2 with noise");
 
+index4 = [1 1; 1 2; 1 3; 1 4; 2 1; 2 2; 2 3; 2 4; 3 1; 3 2; 3 3; 3 4; 4 1; 4 2; 4 3; 4 4];
+plotFullFRF(f,H_noise,index4,"FRF of complete system with noise");
+
+%% Determine the complete FRF using impedence coupling based on subsystems with noise
+% Reorganise FRF matrices
+H1_BB_noise = H1_noise(1,1,:);
+H1_BI_noise = H1_noise(1,2,:);
+H1_IB_noise = H1_noise(2,1,:);
+H1_II_noise = H1_noise(2,2,:);
+
+H1_ic_noise = [H1_BB_noise, H1_BI_noise;
+               H1_IB_noise, H1_II_noise];
+
+H2_BB_noise = H2_noise(1,1,:);
+H2_BI_noise = H2_noise(1,2:3,:);    
+H2_IB_noise = H2_noise(2:3,1,:);   
+H2_II_noise = H2_noise(2:3,2:3,:); 
+
+H2_ic_noise = [H2_BB_noise, H2_BI_noise;
+               H2_IB_noise, H2_II_noise];
+
+H_ic_noise = impedanceCoupling(H1_ic_noise, H2_ic_noise);
+
+%% Plot the impendence coupled FRF with noise
+index_ic = [1 1; 1 2; 1 3; 1 4; 2 1; 2 2; 2 3; 2 4; 3 1; 3 2; 3 3; 3 4; 4 1; 4 2; 4 3; 4 4];
+name_index = [];
+plotFullFRF(f,H_ic_noise,index_ic,"FRFs of impedence coupled system with noise");
+
 
 %% Function definitions
 function plotFullFRF(f, H, index, plotTitle)
     % plot all FRFs of the given FRF matrix in a square grid on log log
     % scale. 
-    figure;
+    fig = figure;
     for i = 1:size(index,1)
         subplot(size(H,1), size(H,1), i);
-        loglog(f, squeeze(abs(H(index(i,1), index(i,2), :))));
+        semilogx(f, squeeze(mag2db(abs(H(index(i,1), index(i,2), :)))));
         xlabel('Frequency [Hz]');
-        ylabel('|H_{' + string(index(i,1)) + string(index(i,2)) + '}|');
+        ylabel('|H_{' + string(index(i,1)) + string(index(i,2)) + '}| [dB]');
         grid on;
     end
     sgtitle(plotTitle);
+    exportgraphics(fig, '' + 'export_ string(plotTitle) +'.pdf','Resolution',1200, Padding=5);
 end
 
 function H_ic = impedanceCoupling(H1, H2)
-%   ImpedanceCoupling of two subsystems using the 1 inverse method
-%
-%   H_ic = impedanceCoupling(H1, H2)
+%   ImpedanceCoupling of two subsystems using the 1 inverse metho
 %
 %   Inputs:
 %       H1 : (n1 x n1 x N) FRF of subsystem 1

@@ -104,23 +104,6 @@ index_ic = [1 1; 1 2; 1 3; 1 4; 2 1; 2 2; 2 3; 2 4; 3 1; 3 2; 3 3; 3 4; 4 1; 4 2
 % index_ic = ["B" "B"; "B" "I"; "B" "I"; "B" "I"; "I" "B"; "I" "I"; "I" "I"; "I" "I"; "I" "B"; "I" "I"; "I" "I"; "I" "I"; "I" "B"; "I" "I"; "I" "I"; "I" "I"];
 plotFullFRF(f,H_ic,index_ic,"FRFs of impedence coupled system");
 
-% %% 
-% figure; hold on;
-% index4 = [1 1; 1 2; 1 3; 1 4; 2 1; 2 2; 2 3; 2 4; 3 1; 3 2; 3 3; 3 4; 4 1; 4 2; 4 3; 4 4];
-% FRFname = ["BB" "BI" "IB" "II"];
-% for i = 1:16
-%     subplot(4,4,i);
-%     loglog(f,squeeze(abs(H(index4(i,1),index4(i,2),:))));
-%     hold on;
-%     loglog(f,squeeze(abs(H_ic(index4(i,1),index4(i,2),:))));
-%     hold off;
-%     xlabel('Frequency [Hz]');
-%     ylabel('|H|');
-%     grid on;
-% end
-% sgtitle('Calculated FRF and impedence coupled FRFs');
-% hold off;
-
 %% Add noise to the subsystem and complete system
 % Define Gaussian noise with standard deviation of 0.001
 sd = 0.001;
@@ -165,6 +148,7 @@ H_ic_noise = impedanceCoupling(H1_ic_noise, H2_ic_noise);
 
 %% Plot the impendence coupled FRF with noise
 index_ic = [1 1; 1 2; 1 3; 1 4; 2 1; 2 2; 2 3; 2 4; 3 1; 3 2; 3 3; 3 4; 4 1; 4 2; 4 3; 4 4];
+name_index = [];
 plotFullFRF(f,H_ic_noise,index_ic,"FRFs of impedence coupled system with noise");
 
 
@@ -172,15 +156,18 @@ plotFullFRF(f,H_ic_noise,index_ic,"FRFs of impedence coupled system with noise")
 function plotFullFRF(f, H, index, plotTitle)
     % plot all FRFs of the given FRF matrix in a square grid on log log
     % scale. 
-    figure;
+    fig = figure;
     for i = 1:size(index,1)
         subplot(size(H,1), size(H,1), i);
-        loglog(f, squeeze(abs(H(index(i,1), index(i,2), :))));
+        semilogx(f, squeeze(mag2db(abs(H(index(i,1), index(i,2), :)))));
         xlabel('Frequency [Hz]');
-        ylabel('|H_{' + string(index(i,1)) + string(index(i,2)) + '}|');
+        ylabel('|H_{' + string(index(i,1)) + string(index(i,2)) + '}| [dB]');
         grid on;
     end
     sgtitle(plotTitle);
+    cd Export_graphics\;
+    exportgraphics(fig, string(plotTitle) +'.pdf','Resolution',1200, Padding=5);
+    cd ../;
 end
 
 function H_ic = impedanceCoupling(H1, H2)
