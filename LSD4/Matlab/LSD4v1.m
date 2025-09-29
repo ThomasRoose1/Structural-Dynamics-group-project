@@ -1,4 +1,4 @@
-%% 4DM90 Structural dynamics LSD 4: Impedence coupling
+%% 4DM90 Structural dynamics LSD 4: impedance coupling
 clear; clc; close all;
 
 %% Parameters
@@ -80,7 +80,7 @@ end
 index4 = [1 1; 1 2; 1 3; 1 4; 2 1; 2 2; 2 3; 2 4; 3 1; 3 2; 3 3; 3 4; 4 1; 4 2; 4 3; 4 4];
 plotFullFRF(f,H,index4,"FRF of complete system");
 
-%% Determine the complete FRF using impedence coupling
+%% Determine the complete FRF using impedance coupling
 % Reorganise FRF matrices
 H1_BB = H1(1,1,:);
 H1_BI = H1(1,2,:);
@@ -102,7 +102,7 @@ H_ic = impedanceCoupling(H1_ic, H2_ic);
 %% Plot the FRF of the impendence coupling system
 index_ic = [1 1; 1 2; 1 3; 1 4; 2 1; 2 2; 2 3; 2 4; 3 1; 3 2; 3 3; 3 4; 4 1; 4 2; 4 3; 4 4];
 % index_ic = ["B" "B"; "B" "I"; "B" "I"; "B" "I"; "I" "B"; "I" "I"; "I" "I"; "I" "I"; "I" "B"; "I" "I"; "I" "I"; "I" "I"; "I" "B"; "I" "I"; "I" "I"; "I" "I"];
-plotFullFRF(f,H_ic,index_ic,"FRFs of impedence coupled system");
+plotFullFRF(f,H_ic,index_ic,"FRFs of impedance coupled system");
 
 %% Add noise to the subsystem and complete system
 % Define Gaussian noise with standard deviation of 0.001
@@ -126,7 +126,7 @@ plotFullFRF(f,H2_noise,index3,"FRF of subsystem 2 with noise");
 index4 = [1 1; 1 2; 1 3; 1 4; 2 1; 2 2; 2 3; 2 4; 3 1; 3 2; 3 3; 3 4; 4 1; 4 2; 4 3; 4 4];
 plotFullFRF(f,H_noise,index4,"FRF of complete system with noise");
 
-%% Determine the complete FRF using impedence coupling based on subsystems with noise
+%% Determine the complete FRF using impedance coupling based on subsystems with noise
 % Reorganise FRF matrices
 H1_BB_noise = H1_noise(1,1,:);
 H1_BI_noise = H1_noise(1,2,:);
@@ -149,7 +149,7 @@ H_ic_noise = impedanceCoupling(H1_ic_noise, H2_ic_noise);
 %% Plot the impendence coupled FRF with noise
 index_ic = [1 1; 1 2; 1 3; 1 4; 2 1; 2 2; 2 3; 2 4; 3 1; 3 2; 3 3; 3 4; 4 1; 4 2; 4 3; 4 4];
 name_index = [];
-plotFullFRF(f,H_ic_noise,index_ic,"FRFs of impedence coupled system with noise");
+plotFullFRF(f,H_ic_noise,index_ic,"FRFs of impedance coupled system with noise");
 
 
 %% Function definitions
@@ -165,6 +165,7 @@ function plotFullFRF(f, H, index, plotTitle)
         grid on;
     end
     sgtitle(plotTitle);
+
     cd Export_graphics\;
     exportgraphics(fig, string(plotTitle) +'.pdf','Resolution',1200, Padding=5);
     cd ../;
