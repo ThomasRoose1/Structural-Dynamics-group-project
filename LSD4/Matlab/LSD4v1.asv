@@ -114,7 +114,7 @@ sd_complete = 1/SNR * std(H,0,3);
 % Generate complex noise: real + imaginary parts
 noise1 = sd1 .* (randn(size(H1)) + 1i * sd1 .* randn(size(H1)));
 noise2 = sd2 .* (randn(size(H2)) + 1i * sd2 .* randn(size(H2)));
-noise_complete = sd_complete .* (randn(size(H)) + 1i * sd_complete .* randn(size(H)));
+noise_complete = sd1 .* (randn(size(H)) + 1i * sd_complete .* randn(size(H)));
 
 % Add the complex noise to each subsystem
 H1_noise = H1 + noise1; 
