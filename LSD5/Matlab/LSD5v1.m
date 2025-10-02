@@ -174,5 +174,66 @@ title('FFT of Zero-Padded Signal 2');
 xlim([0 max(f)]);
 grid on;
 
+%% Demonstrate the effect of aliasing on a cosine wave
+
+f_signal = 50;     % signal frequency
+t = 1;             % total time duration of measurement
+
+t_cont = linspace(0, t, 5000);
+sig_cont = cos(2*pi*f_signal*t_cont);
+
+Fs1 = 300;
+N1 = Fs1 * t;
+T1 = 1 / Fs1;
+t1 = (0:N1-1) * T1;
+sig_1 = cos(2*pi*f_signal*t1);
+
+Fs2 = 40;
+N2 = Fs2 * t;
+T2 = 1 / Fs2;
+t2 = (0:N2-1) * T2;
+sig_2 = cos(2*pi*f_signal*t2);
+
+fft_no_alias = abs(fft(sig_1)/N1);
+fft_alias    = abs(fft(sig_2)/N2);
+
+f1 = (0:N1-1) * (Fs1/N1);  
+f2 = (0:N2-1) * (Fs2/N2);
+
+figure;
+
+subplot(2,1,1)
+plot(t_cont, sig_cont, 'k', 'LineWidth', 1.2) % continuous reference
+hold on
+stem(t1, sig_1, 'r','filled')
+title('No aliasing (Fs = 300 Hz)')
+xlabel('Time [s]'), ylabel('Amplitude')
+legend('True cosine','Samples')
+xlim([0 0.2])
+
+subplot(2,1,2)
+plot(t_cont, sig_cont, 'k', 'LineWidth', 1.2)
+hold on
+stem(t2, sig_2, 'b','filled')
+title('Aliased signal (Fs = 40 Hz)')
+xlabel('Time [s]'), ylabel('Amplitude')
+legend('True cosine','Samples')
+xlim([0 0.2])
+
+% --- Plot spectra ---
+figure;
+subplot(2,1,1)
+plot(f1, fft_no_alias)
+xlim([0 Fs1/2])
+title('Spectrum without aliasing (Fs = 300 Hz)')
+xlabel('Frequency [Hz]'), ylabel('Magnitude')
+
+subplot(2,1,2)
+plot(f2, fft_alias)
+xlim([0 Fs2/2])
+title('Spectrum with aliasing (Fs = 40 Hz)')
+xlabel('Frequency [Hz]'), ylabel('Magnitude')
+
+
 
 

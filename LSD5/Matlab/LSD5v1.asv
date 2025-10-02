@@ -16,11 +16,13 @@ fs = 1 / delta_t;
 signals = zeros(6,length(t));
 
 % A harmonic signal with f = 1 Hz
-signals(1,:) = sin((2*pi) * 1 * t);
+f1 = 1;
+signals(1,:) = sin((2*pi) * f1 * t);
 
 % A signal being the sum of two harmonic functions with f1 = 1 Hz and f2 =
 % 2 Hz and 90° phase shift
-signals(2,:) = signals(1,:) + sin(((2*pi) * 2 * t) + deg2rad(90)); 
+f2 = 2;
+signals(2,:) = signals(1,:) + sin(((2*pi) * f2 * t) + deg2rad(90)); 
 
 % A square wave signal, where each square has a length of 1 sec.
 count = 0;
@@ -85,18 +87,25 @@ for i = 1:size(fftSignals, 1)
 end
 
 %% Compare the influence of varying the parameters T and N
-N_comparison = [40 200 500];
+N_comparison = [4 10 100];
 T_comparison = [1 5 10];
 
 % Loop through T while keeping N constant
 figure;
-for i = 1:length(N_comparison)
+for i = 1:length(T_comparison)
     %Define signal
-    
-    signal2 = signals(1,:) + sin(((2*pi) * 2 * t) + deg2rad(90)); 
-    fft2 = 1/N_comparison(i)*fft(signal2);
-    delta_f2 = 1/T_comparison(1);
-    f_2 = (0:N_comparison(i)-1) * delta_f2;
+    delta_t2 = T_comparison(i) / N_comparison(3);
+    t2 = (0:N_comparison(3)-1)*delta_t2;
+    signal2 = sin(((2*pi) * f1 * t2)) + sin(((2*pi) * f2 * t2) + deg2rad(90)); 
+
+    % Perform the fft
+    fft2 = 1/N_comparison(3)*fft(signal2);
+
+    % Define frequeny axis
+    delta_f2 = 1/T_comparison(i);
+    f_2 = (0:N_comparison(3)-1) * delta_f2;
+
+    % plot result in subplot
     subplot(2,2,i);
     h = stem(f_2, abs(fft2));
     h.Marker = '.';        % use a dot instead of a circle
@@ -104,13 +113,43 @@ for i = 1:length(N_comparison)
     h.LineWidth = 0.1;       % thinner stem lines
     xlabel("Frequency [Hz]");
     ylabel("Magnitude [m]");
-    title('FFT of Signal 2: N = ' + string(N_comparison(i)) + 'T = ' + string(T_comparison(1)));
+    title('FFT of Signal 2: N = ' + string(N_comparison(3)) + ' T = ' + string(T_comparison(i)));
     xlim([0 max(f_2)]);
     ylim([0 1.2*max(abs(fft2))]);
     grid on;
 end
 
+
 % Loop through N while keeping T constant
+figure;
+for i = 1:length(N_comparison)
+    %Define signal
+    delta_t2 = T_comparison(1) / N_comparison(i);
+    t2 = (0:N_comparison(i)-1)*delta_t2;
+    signal2 = sin(((2*pi) * f1 * t2)) + sin(((2*pi) * f2 * t2) + deg2rad(90)); 
+
+    % Perform the fft
+    fft2 = 1/N_comparison(i)*fft(signal2);
+
+    % Define frequeny axis
+    delta_f2 = 1/T_comparison(1);
+    f_2 = (0:N_comparison(i)-1) * delta_f2;
+
+    % plot result in subplot
+    subplot(2,2,i);
+    h = stem(f_2, abs(fft2));
+    h.Marker = '.';        % use a dot instead of a circle
+    h.MarkerSize = 6;      % smaller dot
+    h.LineWidth = 0.1;       % thinner stem lines
+    xlabel("Frequency [Hz]");
+    ylabel("Magnitude [m]");
+    title('FFT of Signal 2: N = ' + string(N_comparison(i)) + ' T = ' + string(T_comparison(1)));
+    xlim([0 max(f_2)]);
+    ylim([0 1.2*max(abs(fft2))]);
+    grid on;
+end
+
+
 
 
 %% Expand signal 2 with zero padding. 
@@ -135,5 +174,26 @@ title('FFT of Zero-Padded Signal 2');
 xlim([0 max(f)]);
 grid on;
 
+%% Demonstrate the effect of aliasing on a sine wave
+
+f_signal=50;
+t = 1; %total time duration of measurement
+
+Fs1 = 300;
+N1 = Fs1*t;
+T1 = 1/Fs1;
+t1 = (0:N1-1)*T1;
+
+Fs2 = 40;
+N2 = Fs2*t;
+T2 = 1/Fs2;
+t2 = (0:N2-1)*T2;
+
+x1 = cos(2*pi*f_signal*t);
+
+figure;
+plot(t1(1:100),x1(1:100))
+
+fft_no_alias = abs(1/N*fft())
 
 
