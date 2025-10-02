@@ -174,26 +174,103 @@ title('FFT of Zero-Padded Signal 2');
 xlim([0 max(f)]);
 grid on;
 
-%% Demonstrate the effect of aliasing on a sine wave
+%% Demonstrate the effect of aliasing on a cosine wave
 
-f_signal=50;
-t = 1; %total time duration of measurement
+f_signal = 50;     % signal frequency
+t = 1;             % total time duration of measurement
+
+t_cont = linspace(0, t, 5000);
+sig_cont = cos(2*pi*f_signal*t_cont);
 
 Fs1 = 300;
-N1 = Fs1*t;
-T1 = 1/Fs1;
-t1 = (0:N1-1)*T1;
+N1 = Fs1 * t;
+T1 = 1 / Fs1;
+t1 = (0:N1-1) * T1;
+sig_1 = cos(2*pi*f_signal*t1);
 
 Fs2 = 40;
-N2 = Fs2*t;
-T2 = 1/Fs2;
-t2 = (0:N2-1)*T2;
+N2 = Fs2 * t;
+T2 = 1 / Fs2;
+t2 = (0:N2-1) * T2;
+sig_2 = cos(2*pi*f_signal*t2);
 
-x1 = cos(2*pi*f_signal*t);
+fft_no_alias = abs(fft(sig_1)/N1);
+fft_alias    = abs(fft(sig_2)/N2);
+
+f1 = (0:N1-1) * (Fs1/N1);  
+f2 = (0:N2-1) * (Fs2/N2);
 
 figure;
-plot(t1(1:100),x1(1:100))
 
-fft_no_alias = abs(1/N*fft())
+subplot(2,1,1)
+plot(t_cont, sig_cont, 'k', 'LineWidth', 1.2) % continuous reference
+hold on
+stem(t1, sig_1, 'r','filled')
+title('No aliasing (Fs = 300 Hz)')
+xlabel('Time [s]'), ylabel('Amplitude')
+legend('True cosine','Samples')
+xlim([0 0.2])
+
+subplot(2,1,2)
+plot(t_cont, sig_cont, 'k', 'LineWidth', 1.2)
+hold on
+stem(t2, sig_2, 'b','filled')
+title('Aliased signal (Fs = 40 Hz)')
+xlabel('Time [s]'), ylabel('Amplitude')
+legend('True cosine','Samples')
+xlim([0 0.2])
+
+% --- Plot spectra ---
+figure;
+subplot(2,1,1)
+plot(f1, fft_no_alias)
+xlim([0 Fs1/2])
+title('Spectrum without aliasing (Fs = 300 Hz)')
+xlabel('Frequency [Hz]'), ylabel('Magnitude')
+
+subplot(2,1,2)
+plot(f2, fft_alias)
+xlim([0 Fs2/2])
+title('Spectrum with aliasing (Fs = 40 Hz)')
+xlabel('Frequency [Hz]'), ylabel('Magnitude')
+
+%% Demonstrate signal leakage
+%Since signal leakage occurs when the period given cosine or sine present in the
+%signal is not a integer multiple of the measurement time it can be shown
+%as follows
+
+f_signal = 50;     % signal frequency
+t = 0.07;          % total time duration of measurement
+Fs = 1000; %well above nyquist
+T = 1/Fs;
+N = t*1000;
+t_series = (0:N-1)*T;
+sig_sampled = cos(2*pi*f_signal*t_series);
+
+t_cont = linspace(0,t,5000);
+sig_cont = cos(2*pi*f_signal*t_cont);
+
+figure;
+plot(t_cont, sig_cont, 'k', 'LineWidth', 1.2) % continuous reference
+hold on
+stem(t_series, sig_sampled, 'r', 'filled')   % sampled points
+xlabel('Time [s]')
+ylabel('Amplitude')
+title('Time series: continuous vs sampled signal')
+legend('Continuous cosine', 'Sampled points')
+xlim([0 t])
+
+fft_sig = abs(fft(sig_sampled)/N);       % normalize FFT
+f_axis = (0:N-1)*(Fs/N);                % frequency axis
+
+figure;
+plot(f_axis, fft_sig, 'b', 'LineWidth', 1.2)
+xlim([0 Fs/2])   % show up to Nyquist
+xlabel('Frequency [Hz]')
+ylabel('Magnitude')
+title('Frequency spectrum of sampled signal')
+
+
+
 
 

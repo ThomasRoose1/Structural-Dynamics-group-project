@@ -234,6 +234,43 @@ xlim([0 Fs2/2])
 title('Spectrum with aliasing (Fs = 40 Hz)')
 xlabel('Frequency [Hz]'), ylabel('Magnitude')
 
+%% Demonstrate signal leakage
+%Since signal leakage occurs when the period given cosine or sine present in the
+%signal is not a integer multiple of the measurement time it can be shown
+%as follows
+
+f_signal = 50;     % signal frequency
+t = 0.07;          % total time duration of measurement
+Fs = 1000; %well above nyquist
+T = 1/Fs;
+N = t*1000;
+t_series = (0:N-1)*T;
+sig_sampled = cos(2*pi*f_signal*t_series);
+
+t_cont = linspace(0,t,5000);
+sig_cont = cos(2*pi*f_signal*t_cont);
+
+figure;
+plot(t_cont, sig_cont, 'k', 'LineWidth', 1.2) % continuous reference
+hold on
+stem(t_series, sig_sampled, 'r', 'filled')   % sampled points
+xlabel('Time [s]')
+ylabel('Amplitude')
+title('Time series: continuous vs sampled signal')
+legend('Continuous cosine', 'Sampled points')
+xlim([0 t])
+
+fft_sig = abs(fft(sig_sampled)/N);       % normalize FFT
+f_axis = (0:N-1)*(Fs/N);                % frequency axis
+
+figure;
+plot(f_axis, fft_sig, 'b', 'LineWidth', 1.2)
+xlim([-Fs/2, Fs/2])   % show up to Nyquist
+xlabel('Frequency [Hz]')
+ylabel('Magnitude')
+title('Frequency spectrum of sampled signal')
+
+
 
 
 
