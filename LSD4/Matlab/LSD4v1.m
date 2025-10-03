@@ -21,13 +21,7 @@ K1 = [k2     -k2;
      -k2    k1+k2];
 
 %% FRF calculation for subsystem 1
-n = length(w);
-H1 = zeros(2,2,n);
-
-for i = 1:n
-    A = -w(i)^2*M1 + 1i*w(i)*B1 + K1;
-    H1(:,:,i) = inv(A);
-end
+H1 = FRFcalculation(M1,B1,K1,w);
 
 %% Plot all FRFs of subsystem 1
 index2 = [1 1; 1 2; 2 1; 2 2];
@@ -45,12 +39,7 @@ K2 = [k3 -k3 0;
       0 -k4 k4];
 
 %% FRF calculation for subsystem 2
-H2 = zeros(3,3,n);
-
-for i = 1:n
-    A = -w(i)^2*M2 + 1i*w(i)*B2 + K2;
-    H2(:,:,i) = A\eye(3,3);
-end
+H2 = FRFcalculation(M2,B2,K2,w);
 
 %% Plot all FRFs of subsystem 2
 index3 = [1 1; 1 2; 1 3; 2 1; 2 2; 2 3; 3 1; 3 2; 3 3];
@@ -69,12 +58,7 @@ K = [k1+k2      -k2     0       0;
      0          0       -k4     k4];
 
 %% FRF calculation for complete system
-H = zeros(4,4,n);
-
-for i = 1:n
-    A = -w(i)^2*M + 1i*w(i)*B + K;
-    H(:,:,i) = A\eye(4,4);
-end
+H = FRFcalculation(M,B,K,w);
 
 %% Plot all FRFs of complete system
 index4 = [1 1; 1 2; 1 3; 1 4; 2 1; 2 2; 2 3; 2 4; 3 1; 3 2; 3 3; 3 4; 4 1; 4 2; 4 3; 4 4];
@@ -101,25 +85,21 @@ H2_ic = [H2_BB, H2_BI;
 H_ic = impedanceCoupling(H1_ic, H2_ic);
 %% Plot the FRF of the impendence coupling system
 index_ic = [1 1; 1 2; 1 3; 1 4; 2 1; 2 2; 2 3; 2 4; 3 1; 3 2; 3 3; 3 4; 4 1; 4 2; 4 3; 4 4];
-% index_ic = ["B" "B"; "B" "I"; "B" "I"; "B" "I"; "I" "B"; "I" "I"; "I" "I"; "I" "I"; "I" "B"; "I" "I"; "I" "I"; "I" "I"; "I" "B"; "I" "I"; "I" "I"; "I" "I"];
 plotFullFRF(f,H_ic,index_ic,"FRFs of impedance coupled system");
 
 %% Add complex Gaussian noise to the subsystem and complete system
 % Define Gaussian noise with standard deviation of 0.001
-SNR = 10;
-sd1 = 1/SNR * std(H1,0,3);
-sd2 = 1/SNR * std(H2,0,3);
-sd_complete = 1/SNR * std(H,0,3);
+sd = 0.002;
 
 % Generate complex noise: real + imaginary parts
-noise1 = sd1 .* (randn(size(H1)) + 1i * sd1 .* randn(size(H1)));
-noise2 = sd2 .* (randn(size(H2)) + 1i * sd2 .* randn(size(H2)));
-noise_complete = sd_complete .* (randn(size(H)) + 1i * sd_complete .* randn(size(H)));
+FRFnoise1 = sd .* (randn(size(H1)) + 1i  .* randn(size(H1)));
+FRFnoise2 = sd .* (randn(size(H2)) + 1i  .* randn(size(H2)));
+FRFnoise_complete = sd .* (randn(size(H)) + 1i .* randn(size(H)));
 
 % Add the complex noise to each subsystem
-H1_noise = H1 + noise1; 
-H2_noise = H2 + noise2;
-H_noise = H + noise_complete;
+H1_noise = H1 + FRFnoise1; 
+H2_noise = H2 + FRFnoise2;
+H_noise = H + FRFnoise_complete;
 
 %% Plot all FRFs of the subsystems and complete system with noise
 index2 = [1 1; 1 2; 2 1; 2 2];
@@ -157,7 +137,23 @@ name_index = [];
 plotFullFRF(f,H_ic_noise,index_ic,"FRFs of impedance coupled system with noise");
 
 
+%% Determine the standard deviation and SNR of the FRFs with noise
+std1_final = mean(std(real(H1_noise-H1),0,3), 'all');
+std2_final = mean(std(real(H2_noise-H2),0,3), 'all');
+stdc_final = mean(std(real(H_noise - H),0,3), 'all');
+std_ic_final = mean(std(real(H_ic_noise - H_ic),0,3), 'all');
+
+
 %% Function definitions
+function H = FRFcalculation(M,B,K,w)
+    H = zeros(size(M,1),size(M,2),length(w));
+    for i = 1:length(w)
+        A = -w(i)^2*M + 1i*w(i)*B + K;
+        H(:,:,i) = inv(A);
+    end
+end
+
+
 function plotFullFRF(f, H, index, plotTitle)
     % plot all FRFs of the given FRF matrix in a square grid on log log
     % scale. 
@@ -226,3 +222,4 @@ function H_ic = impedanceCoupling(H1, H2)
         H_ic(:,:,k) = first_term - second_term;
     end
 end
+
