@@ -70,10 +70,6 @@ function [t_ss, x_ss] = simulate_and_plot(sys, x0, T_e, N_o, N_t, N_s, odeopts, 
     title('Zoom: Last 10 periods','FontWeight','normal');
     grid on; box on;
 
-    % Export the plot as pdf
-    exportgraphics(fig, "Export_graphics\NSD1p2_"  + string(option) + "_sim_and_plot_x.pdf",'Resolution',1200, Padding=5);
-    clear fig
-
     % ---------------- Plot: Velocity time history ----------------
     fig = figure('Color','w');
     
@@ -93,8 +89,5 @@ function [t_ss, x_ss] = simulate_and_plot(sys, x0, T_e, N_o, N_t, N_s, odeopts, 
     ylabel('$v$', 'Interpreter', 'latex');
     title('Zoom: Last 10 periods','FontWeight','normal');
     grid on; box on;
-    
-    % Export the plot as pdf
-    exportgraphics(fig, "Export_graphics\NSD1p2_" + string(option) + "_sim_and_plot_v.pdf",'Resolution',1200, Padding=5);
-    clear fig
+
 end

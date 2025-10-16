@@ -35,7 +35,7 @@ end
 % Compute the resonance frequecny of the undamped Duffing equation
 f_resonance = sqrt(k1/m) / (2*pi);
 
-% plot both magnitude and phase
+% plot both magnitude
 fig = figure;
 semilogy(f, abs(FRF));
 xlabel('Frequency [Hz]');
@@ -47,11 +47,24 @@ grid on;
 exportgraphics(fig, "Export_graphics\NSD1p2_linearFRF" +'.pdf','Resolution',1200, Padding=5);
 clear fig
 
-%% (b) Perform a slow sweep of the linearized Duffing equation with f = [1 700] Hz and compare with FRF
+%% (b1) Perform a slow sweep of the linearized Duffing equation with f = [1 700] Hz and compare with FRF
 % Multiply the FRF with the given force to obtain the linear displacement
 FRF_m = F * FRF;
 
-% Define a frequency range from 1 to 50 Hz with frequency resolution of
+% plot both magnitude
+fig = figure;
+semilogy(f, abs(FRF_m));
+xlabel('Frequency [Hz]');
+ylabel('Magnitude [m]');
+title('Linear FRF of displacement $\hat{V}(\frac{L}{2},f)$', 'Interpreter', 'latex');
+grid on;
+
+% Export the plot as pdf
+exportgraphics(fig, "Export_graphics\NSD1p2_linearFRF_displacement" +'.pdf','Resolution',1200, Padding=5);
+clear fig
+
+
+%% Define a frequency range from 1 to 50 Hz with frequency resolution of
 % 0.25 Hz
 f_start = 1; f_end = 700;
 f_Delta = 1; 
@@ -103,15 +116,15 @@ alpha = k1/m; beta = k3/m; gamma = F/m; Delta = c/m;
 sys_nl = @(t,x,f) duffing(t,x,alpha,beta,gamma,Delta,f);
 
 % Perform the sweep
-[freq_up, A_up] = sweep(sys_nl, x0, f_start, f_end, f_Delta, N_t, N_s, odeopts);
+[freq_up_c, A_up_c] = sweep(sys_nl, x0, f_start, f_end, f_Delta, N_t, N_s, odeopts);
 
-[freq_down, A_down] = sweep(sys_nl, x0, f_end, f_start, f_Delta, N_t, N_s, odeopts);
+[freq_down_c, A_down_c] = sweep(sys_nl, x0, f_end, f_start, f_Delta, N_t, N_s, odeopts);
 
 % plot both magnitude and phase
 fig = figure;
-semilogy(freq_up, A_up, 'b');
+semilogy(freq_up_c, A_up_c, 'b');
 hold on;
-semilogy(freq_down, A_down, 'r--');
+semilogy(freq_down_c, A_down_c, 'r--');
 xlabel('Frequency [Hz]');
 ylabel('Magnitude [m]');
 title('Sweep up and down of Duffing equation with $f \in [1, \, 50]$ Hz', 'Interpreter', 'latex');
@@ -137,15 +150,15 @@ alpha = k1/m; beta = k3/m; gamma = F/m; Delta = c/m;
 sys_nl = @(t,x,f) duffing(t,x,alpha,beta,gamma,Delta,f);
 
 % Perform the sweep
-[freq_up, A_up] = sweep(sys_nl, x0, f_start, f_end, f_Delta, N_t, N_s, odeopts);
+[freq_up_d, A_up_d] = sweep(sys_nl, x0, f_start, f_end, f_Delta, N_t, N_s, odeopts);
 
-[freq_down, A_down] = sweep(sys_nl, x0, f_end, f_start, f_Delta, N_t, N_s, odeopts);
+[freq_down_d, A_down_d] = sweep(sys_nl, x0, f_end, f_start, f_Delta, N_t, N_s, odeopts);
 
 % plot both magnitude and phase
 fig = figure; 
-semilogy(freq_up, A_up, 'b'); 
+semilogy(freq_up_d, A_up_d, 'b'); 
 hold on;
-semilogy(freq_down, A_down, 'r--');
+semilogy(freq_down_d, A_down_d, 'r--');
 xlabel('Frequency [Hz]');
 ylabel('Magnitude [m]');
 title('Sweep up and down of Duffing equation with $f \in [50, \, 600]$ Hz', 'Interpreter', 'latex');
@@ -170,22 +183,24 @@ x0 = [0.0176;8];
 alpha = k1/m; beta = k3/m; gamma = F/m; Delta = c/m;
 sys_nl = @(t,x,f) duffing(t,x,alpha,beta,gamma,Delta,f);
 
+% Define ode options
+odeopts = odeset('RelTol',1e-10,'AbsTol',1e-12);
+
 % Perform the sweep
-[freq_up, A_up] = sweep(sys_nl, x0, f_start, f_end, f_Delta, N_t, N_s, odeopts);
+[freq_up_e, A_up_e] = sweep(sys_nl, x0, f_start, f_end, f_Delta, N_t, N_s, odeopts);
 
 % Define frequencies for sweep down
 f_start = 400; f_end = 350;
 
-[freq_down, A_down] = sweep(sys_nl, x0, f_start, f_end, f_Delta, N_t, N_s, odeopts);
+[freq_down_e, A_down_e] = sweep(sys_nl, x0, f_start, f_end, f_Delta, N_t, N_s, odeopts);
 
 % plot both magnitude and phase
 fig = figure; 
-semilogy(freq_up, A_up, 'b'); 
+semilogy(freq_up_e, A_up_e, 'b'); 
 hold on;
-semilogy(freq_down, A_down, 'r--');
+semilogy(freq_down_e, A_down_e, 'r--');
 xlabel('Frequency [Hz]');
 ylabel('Magnitude [m]');
-yscale([])
 title('Sweep up and down of Duffing equation with $f \in [350, \, 450]$ Hz', 'Interpreter', 'latex');
 legend('sweep up', 'sweep down');
 grid on;
@@ -194,7 +209,25 @@ grid on;
 exportgraphics(fig, "Export_graphics\NSD1p2_sweep_e" +'.pdf','Resolution',1200, Padding=5);
 clear fig
 
-%% (f) not finished
+%% (f) Combine results from question (c) - (e)
+fig = figure; 
+semilogy(freq_up_c, A_up_c, 'b'); 
+hold on;
+semilogy(freq_down_c, A_down_c, 'r--');
+semilogy(freq_up_d, A_up_d, 'b');
+semilogy(freq_down_d, A_down_d, 'r--');
+semilogy(freq_up_e, A_up_e, 'b');
+semilogy(freq_down_e, A_down_e, 'r--');
+xlabel('Frequency [Hz]');
+ylabel('Magnitude [m]');
+title('Sweep up and down of Duffing equation with $f \in [1, \, 600]$ Hz', 'Interpreter', 'latex');
+legend('sweep up', 'sweep down');
+grid on;
+
+% Export the plot as pdf
+exportgraphics(fig, "Export_graphics\NSD1p2_sweep_f" +'.pdf','Resolution',1200, Padding=5);
+clear fig
+
 
 %% (g) - (k)
 option = 'j';
@@ -230,11 +263,131 @@ end
 % Call the simulate and plot, poincare_section and frequency_spectrum
 % functions
 T_e = 1 / f_e;
-[t_ss, x_ss] = simulate_and_plot(sys_nl, x0, T_e, N_o, N_t, N_s, odeopts);
-poincare_section(t_ss,x_ss,T_e,N_s);
-[f1, Mag1s] = frequency_spectrum(t_ss, x_ss, T_e, f_range);
+[t_ss, x_ss] = simulate_and_plot(sys_nl, x0, T_e, N_o, N_t, N_s, odeopts, option);
+poincare_section(t_ss,x_ss,T_e,N_s, option);
+[f1, Mag1s] = frequency_spectrum(t_ss, x_ss(:,1), T_e, f_range, option);
 
+%% (l) take the force i) twice lower. and repeat (c) and (d)
+F_i = F/2;
 
+% sweep up and down on f = [1 50]
+f_start = 1; f_end = 50;
+f_Delta = 0.25;
+
+% Define the number of samples of the transient and stable
+N_t = 200; N_s = 200;
+
+% Define initial conditions as 0 for both displacement and velocity
+x0 = [0;0];
+
+% Define the system
+alpha = k1/m; beta = k3/m; gamma = F_i/m; Delta = c/m;
+sys_nl = @(t,x,f) duffing(t,x,alpha,beta,gamma,Delta,f);
+
+% Define ode options
+odeopts = odeset('RelTol',1e-6,'AbsTol',1e-9);
+
+% Perform the sweep
+[freq_up_l_i_c, A_up_l_i_c] = sweep(sys_nl, x0, f_start, f_end, f_Delta, N_t, N_s, odeopts);
+
+[freq_down_l_i_c, A_down_l_i_c] = sweep(sys_nl, x0, f_end, f_start, f_Delta, N_t, N_s, odeopts);
+
+% sweep up and down on f = [50 750]
+f_start = 50; f_end = 750;
+f_Delta = 1;
+
+% Define the number of samples of the transient and stable
+N_t = 200; N_s = 200;
+
+% Define initial conditions as 0 for both displacement and velocity
+x0 = [0;0];
+
+% Define the system
+alpha = k1/m; beta = k3/m; gamma = F_i/m; Delta = c/m;
+sys_nl = @(t,x,f) duffing(t,x,alpha,beta,gamma,Delta,f);
+
+% Perform the sweep
+[freq_up_l_i_d, A_up_l_i_d] = sweep(sys_nl, x0, f_start, f_end, f_Delta, N_t, N_s, odeopts);
+
+[freq_down_l_i_d, A_down_l_i_d] = sweep(sys_nl, x0, f_end, f_start, f_Delta, N_t, N_s, odeopts);
+
+% Plot both ranges in one fig
+fig = figure; 
+semilogy(freq_up_l_i_c, A_up_l_i_c, 'b'); 
+hold on;
+semilogy(freq_down_l_i_c, A_down_l_i_c, 'r--');
+semilogy(freq_up_l_i_d, A_up_l_i_d, 'b');
+semilogy(freq_down_l_i_d, A_down_l_i_d, 'r--');
+xlabel('Frequency [Hz]');
+ylabel('Magnitude [m]');
+title('Sweep up and down of Duffing equation with $f \in [1, \, 750]$ Hz', 'Interpreter', 'latex');
+legend('sweep up', 'sweep down');
+grid on;
+
+% Export the plot as pdf
+exportgraphics(fig, "Export_graphics\NSD1p2_sweep_l_i" +'.pdf','Resolution',1200, Padding=5);
+clear fig
+
+%% (l) take the force ii) twice higher. and repeat (c) and (d)
+F_ii = F*2;
+
+% sweep up and down on f = [1 50]
+f_start = 1; f_end = 50;
+f_Delta = 0.25;
+
+% Define the number of samples of the transient and stable
+N_t = 200; N_s = 200;
+
+% Define initial conditions as 0 for both displacement and velocity
+x0 = [0;0];
+
+% Define the system
+alpha = k1/m; beta = k3/m; gamma = F_ii/m; Delta = c/m;
+sys_nl = @(t,x,f) duffing(t,x,alpha,beta,gamma,Delta,f);
+
+% Define ode options
+odeopts = odeset('RelTol',1e-6,'AbsTol',1e-9);
+
+% Perform the sweep
+[freq_up_l_ii_c, A_up_l_ii_c] = sweep(sys_nl, x0, f_start, f_end, f_Delta, N_t, N_s, odeopts);
+
+[freq_down_l_ii_c, A_down_l_ii_c] = sweep(sys_nl, x0, f_end, f_start, f_Delta, N_t, N_s, odeopts);
+
+% sweep up and down on f = [50 750]
+f_start = 50; f_end = 750;
+f_Delta = 1;
+
+% Define the number of samples of the transient and stable
+N_t = 200; N_s = 200;
+
+% Define initial conditions as 0 for both displacement and velocity
+x0 = [0;0];
+
+% Define the system
+alpha = k1/m; beta = k3/m; gamma = F_ii/m; Delta = c/m;
+sys_nl = @(t,x,f) duffing(t,x,alpha,beta,gamma,Delta,f);
+
+% Perform the sweep
+[freq_up_l_ii_d, A_up_l_ii_d] = sweep(sys_nl, x0, f_start, f_end, f_Delta, N_t, N_s, odeopts);
+
+[freq_down_l_ii_d, A_down_l_ii_d] = sweep(sys_nl, x0, f_end, f_start, f_Delta, N_t, N_s, odeopts);
+
+% Plot both ranges in one fig
+fig = figure; 
+semilogy(freq_up_l_i_c, A_up_l_i_c, 'b'); 
+hold on;
+semilogy(freq_down_l_ii_c, A_down_l_ii_c, 'r--');
+semilogy(freq_up_l_i_d, A_up_l_i_d, 'b');
+semilogy(freq_down_l_ii_d, A_down_l_ii_d, 'r--');
+xlabel('Frequency [Hz]');
+ylabel('Magnitude [m]');
+title('Sweep up and down of Duffing equation with $f \in [1, \, 750]$ Hz', 'Interpreter', 'latex');
+legend('sweep up', 'sweep down');
+grid on;
+
+% Export the plot as pdf
+exportgraphics(fig, "Export_graphics\NSD1p2_sweep_l_ii" +'.pdf','Resolution',1200, Padding=5);
+clear fig
 %% Save workspace for later use
 save(workspace);
 fprintf('Saved workspace as ' + workspace + '\n')    

@@ -1,4 +1,4 @@
-function poincare_section(t_ss, x_ss, T_e, N_s)
+function poincare_section(t_ss, x_ss, T_e, N_s, option)
 %POINCARE_SECTION  Plot steady-state phase portrait and Poincaré map
 %
 %   poincare_section(t_ss, x_ss, T_e, N_s)
@@ -17,7 +17,7 @@ function poincare_section(t_ss, x_ss, T_e, N_s)
 %     poincare_section(t, x, 1/f_e, 200)
 
     % --- Create figure ---
-    figure('Color', 'w'); hold on; grid on;
+    fig = figure('Color', 'w'); hold on; grid on;
     
     % Plot steady-state phase trajectory (continuous curve)
     plot(x_ss(:,1), x_ss(:,2), '-', 'LineWidth', 1.5, 'Color', [0 0.447 0.741]);
@@ -38,4 +38,8 @@ function poincare_section(t_ss, x_ss, T_e, N_s)
     legend({'Steady-state trajectory','Poincaré points'}, 'Location','best');
     
     hold off;
+
+    % Export the plot as pdf
+    exportgraphics(fig, "Export_graphics\NSD1p2_" + string(option) + "_poincare.pdf",'Resolution',1200, Padding=5);
+    clear fig
 end

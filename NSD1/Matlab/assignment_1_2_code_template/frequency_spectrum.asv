@@ -65,7 +65,7 @@ function [f1, Mag1s] = frequency_spectrum(t_ss, phi_compiled, T_e, f_range, opti
     end
 
     % Export the plot as pdf
-    exportgraphics(fig, "Export_graphics\NSD1p2_" + string(option) + "_freq.pdf",'Resolution',1200, Padding=5);
+    exportgraphics(fig, "Export_graphics\NSD1p2_" + string(option) +freq_.pdf",'Resolution',1200, Padding=5);
     clear fig
 
 end
