@@ -33,7 +33,12 @@ for i = 1:length(w)
 end
 
 % Compute the resonance frequecny of the undamped Duffing equation
-f_resonance = sqrt(k1/m) / (2*pi);
+omega_n = sqrt(k1/m);
+f_n = omega_n / (2*pi);
+
+xi = c / (2*m*omega_n);
+omega_d = omega_n*sqrt(1-xi^2);
+f_d = omega_d / (2*pi);
 
 % plot both magnitude
 fig = figure;
@@ -370,3 +375,28 @@ fprintf('Saved workspace as ' + workspace + '\n')
 elapsedTime = toc;
 fprintf('Script completed in %.2f minutes.\n', elapsedTime/60);
 
+%% (m)
+
+m_cont = rho*b*h;
+
+eigs_vec = [4.73004074, 7.85320462, 10.9956079];
+sigma_vec = [0.982502215, 1.000777312, 0.999966450];
+
+eig_freqs = ((eigs_vec.^2)./(2*pi*L^2)).*((E*I)/(m_cont))^(0.5);
+
+x = linspace(0,1,100);
+
+modes = zeros(3, length(x));
+for i = 1:length(eigs_vec)
+    modes(i,:) = cosh((eigs_vec(i)*x)./L)- cos((eigs_vec(i)*x)./L)-sigma_vec(i)*(sinh((eigs_vec(i)*x)./L)-sin((eigs_vec(i)*x)./L));
+end
+
+fig = figure;
+plot(x,modes);
+grid on;
+title('Eigenmodes of clamped clamped beam', "Interpreter","latex");
+legend('1st eigenmode', '2nd eigenmode', '3rd eigenmode');
+
+% Export the plot as pdf
+exportgraphics(fig, "Export_graphics\NSD1p2_eigenmodes" +'.pdf','Resolution',1200, Padding=5);
+clear fig
